@@ -107,17 +107,32 @@ volcano_plot(enrich3, interactive=TRUE)
 
 Next we want to do some categorical clustering to find hits which are similar in their gene content and then pick a suitable term to represent each of them.
 
-```{r}
+```{r fig.width=800, fig.height=800}
 cluster_enrich_result(enrich1) -> cluster1
 cluster1
+cluster_volcano_plot(cluster1, interactive = TRUE)
 ```
 
-```{r}
+```{r fig.width=800, fig.height=800}
 cluster_enrich_result(enrich2) -> cluster2
 cluster2
+cluster_volcano_plot(cluster2, interactive = TRUE)
 ```
 
-```{r}
+```{r fig.width=800, fig.height=800}
 cluster_enrich_result(enrich3) -> cluster3
 cluster3
+cluster_volcano_plot(cluster3, interactive = TRUE)
 ```
+
+
+# Comparison
+
+Next we want to look for terms whose enrichment changes significantly between different datasets.  We can do this by passing a list of the enrichment results we want to compare.  Only terms which are in all sets can be tested, which is why it's important that the original enrichment is calculated without a pvalue filter.
+
+
+
+
+
+
+
