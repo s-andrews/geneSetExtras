@@ -1,4 +1,4 @@
-#' Title
+#' Heirarchical clustering of enrichment results based on the similarity of terms within them
 #'
 #' @param enrich_result A clusterProfiler categorical enrichment results from enrichGO or similar
 #' @param cluster_threshold The tree height at which to create clusters. Higher values give more clusters
