@@ -1,28 +1,44 @@
-plot_differential_enrichment_heatmap <- function(differential_enrichment_hits, enrichment_results, group_names) {
+#' Plot the results of differential enrichment as a heatmap
+#'
+#' @param differential_enrichment_hits The output of compare_enrichment_results
+#' @param scale A TRUE/FALSE value to say whether to scale the heatmap per row
+#' @param log_scale Whether to log tranform the enrichment values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_differential_enrichment_heatmap <- function(differential_enrichment_hits,scale=TRUE, log_scale=TRUE) {
   
-  # We just want the ids from the differential enrichment
-  differential_enrichment_hits$ID -> ids_to_plot
+  differential_enrichment_hits |>
+    pivot_longer(
+      cols=starts_with("FoldEnrichment_"),
+      names_to="group",
+      values_to="Enrichment"
+    ) |>
+    mutate(group=str_replace(group,"^FoldEnrichment_","")) -> plot_data
 
-  enrichment_plot_data <- list()
-  
-  for (i in 1:length(group_names)) {
-    enrichment_results[[i]] |>
-      as_tibble() |>
-      filter(ID %in% ids_to_plot) |>
-      add_column(gene_set=group_names[i]) -> enrichment_plot_data[[i]]
+  if (log_scale) {
+    plot_data |>
+      mutate(Enrichment = replace(Enrichment, Enrichment==0, 0.1)) |>
+      mutate(Enrichment=log2(Enrichment)) -> plot_data
+  }  
+
+  scale_value <- "none"
+
+  if(scale) {
+    scale_value="row"
   }
   
-  do.call(bind_rows,enrichment_plot_data) -> enrichment_plot_data
-  
+
   tidyheatmaps::tidy_heatmap(
-    enrichment_plot_data,
+    plot_data,
     rows=Description,
-    columns = gene_set,
-    values=FoldEnrichment,
+    columns = group,
+    values=Enrichment,
     cluster_rows=TRUE,
     cluster_cols = TRUE,
-    scale="none",
-    colors = c("white","red3")
+    scale=scale_value
   )
   
 }
