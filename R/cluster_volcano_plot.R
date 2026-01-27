@@ -1,3 +1,12 @@
+#' Create a plot of enrichment vs significance for clustered results
+#'
+#' @param cluster_result An output from cluster_enrich_result
+#' @param interactive Whether to return a traditional ggplot (FALSE) or interactive plotly (TRUE) plot
+#'
+#' @return A ggplot or plotly plot
+#' @export
+#'
+#' @examples
 cluster_volcano_plot <- function(cluster_result, interactive=FALSE) {
   cluster_result |>
     mutate(FDR_Phred = -10*log10(p.adjust)) |>
