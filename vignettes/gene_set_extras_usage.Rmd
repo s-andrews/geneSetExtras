@@ -1,0 +1,123 @@
+---
+title: "gene_set_extras_usage"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{gene_set_extras_usage}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+We're going to load in some basic packages.  We use ```clusterProfiler``` to do the initial gene set analysis and the test data we're using is human so we're loading the ```org.Hs.eg.db``` annotation package - you'd modify that to use the package for the species you're using for your data.
+
+We're using tidyverse for general data loading and manipulation - this isn't required but it's nice.
+
+```{r setup}
+library(geneSetExtras)
+library(org.Hs.eg.db)
+library(clusterProfiler)
+library(tidyverse)
+```
+
+
+# Loading test data
+
+The format of the data here isn't important, we just need some way to define the background and hit lists for each group.
+
+```{r message=FALSE, warning=FALSE}
+read_delim(system.file("data1.tsv", package="geneSetExtras")) -> data1
+read_delim(system.file("data2.tsv", package="geneSetExtras")) -> data2
+read_delim(system.file("data3.tsv", package="geneSetExtras")) -> data3
+```
+
+# Running Cluster Profiler
+
+We need to generate an initial set of results from ```clusterProfiler```.  We're doing overlap (rather than quantitative) statistics here.  We should use the same settings for each of the tests.  It's important that we don't filter the hits to keep only significant results but get all of the data for all tested categories.
+
+It's a good idea to limit the size of the gene sets used for the tests.  ClusterProfiler does this by default anyway.
+
+In this instance we'll just use the GO:BP subsection.  We're just going to use all significant genes in this test, but you can be more selective.  Depending on the nature of your data it may make sense to split out upregulated and downregulated genes.
+
+```{r}
+enrichGO(
+  gene = data1 |> filter(significant) |> pull(Gene),
+  universe = data1 |> pull(Gene),
+  OrgDb = org.Hs.eg.db,
+  keyType = "SYMBOL",
+  pvalueCutoff = 1,
+  readable = TRUE,
+  ont = "BP"
+) -> enrich1
+```
+
+
+```{r}
+enrichGO(
+  gene = data2 |> filter(significant) |> pull(Gene),
+  universe = data2 |> pull(Gene),
+  OrgDb = org.Hs.eg.db,
+  keyType = "SYMBOL",
+  pvalueCutoff = 1,
+  readable = TRUE,
+  ont = "BP"
+) -> enrich2
+```
+
+
+```{r}
+enrichGO(
+  gene = data3 |> filter(significant) |> pull(Gene),
+  universe = data3 |> pull(Gene),
+  OrgDb = org.Hs.eg.db,
+  keyType = "SYMBOL",
+  pvalueCutoff = 1,
+  readable = TRUE,
+  ont = "BP"
+) -> enrich3
+```
+
+# Plotting
+
+Now we have individual hits we can plot them out using a volcano plot.  It's often useful to make these interactive so that you can put them into Notebooks and mouse over individual hits to see what they are.
+
+
+```{r}
+volcano_plot(enrich1, interactive=TRUE)
+```
+
+
+```{r}
+volcano_plot(enrich2, interactive=TRUE)
+```
+
+
+
+```{r}
+volcano_plot(enrich3, interactive=TRUE)
+```
+
+
+# Clustering
+
+Next we want to do some categorical clustering to find hits which are similar in their gene content and then pick a suitable term to represent each of them.
+
+```{r}
+cluster_enrich_result(enrich1) -> cluster1
+cluster1
+```
+
+```{r}
+cluster_enrich_result(enrich2) -> cluster2
+cluster2
+```
+
+```{r}
+cluster_enrich_result(enrich3) -> cluster3
+cluster3
+```
