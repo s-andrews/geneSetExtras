@@ -19,4 +19,5 @@ Imports:
     ggplot2,
     plotly,
     stringr,
-    tibble
+    tibble,
+    tidyr
