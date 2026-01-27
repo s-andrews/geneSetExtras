@@ -7,7 +7,7 @@
 #' @export
 #'
 #' @examples
-volcano_plot <- function(enrich_result, interactive=FALSE) {
+volcano_plot <- function(enrich_result, interactive=FALSE, title=NA) {
   
   enrich_result |>
     dplyr::as_tibble() |>
@@ -21,6 +21,10 @@ volcano_plot <- function(enrich_result, interactive=FALSE) {
     ggplot2::ggplot(aes(x=FoldEnrichment, y=FDR_Phred, size=setSize, ID=ID, Description=Description, colour=significant)) +
     ggplot2::geom_point(pch=21) +
     scale_colour_manual(values=c("grey","red2")) -> volcano_plot
+  
+  if (!is.na(title)) {
+    volcano_plot + ggtitle(title) -> volcano_plot
+  }
   
   
   if (interactive) {
