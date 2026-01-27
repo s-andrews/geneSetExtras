@@ -50,7 +50,7 @@ We'll calculate results just for cluster 4 to illustrate how this works.
 
 ```{r}
 enrichGO(
-  gene = hit_data |> filter(cluster==4) |> pull(Gene),
+  gene = hit_data |> filter(cluster=="cluster_4") |> pull(Gene),
   universe = hit_data |> pull(Gene),
   OrgDb = org.Hs.eg.db,
   keyType = "SYMBOL",
@@ -109,12 +109,16 @@ lapply(
   function(x)calculate_cluster_enrichment(hit_data,x)
 ) -> all_enrichment_results
 
+names(all_enrichment_results) <- cluster_names
+
 ```
 
 We can then plot out the results for each cluster
 
 ```{r}
-lapply(all_enrichment_results, volcano_plot, interactive=TRUE)
+for (name in cluster_names) {
+  print(volcano_plot(all_enrichment_results[[name]], interactive=TRUE, title=name))
+}
 ```
 
 We can also generate clustered results
@@ -129,10 +133,11 @@ for (i in 1:length(cluster_names)) {
   if (! is.null(all_clustered_hits[[i]])) {
     all_clustered_hits[[i]] |>
       add_column(cluster=cluster_names[i], .before=1) -> all_clustered_hits[[i]]
+    
+    print(all_clustered_hits[[i]])
   }
 }
 
-all_clustered_hits
 
 ```
 
@@ -141,6 +146,7 @@ all_clustered_hits
 Next we want to look for terms whose enrichment changes significantly between different datasets.  We can do this by passing a list of the enrichment results we want to compare.  Only terms which are in all sets can be tested, which is why it's important that the original enrichment is calculated without a pvalue filter.
 
 \*NB There is an issue with clusterProfiler where it doesn't report categories with no overlaps in the gene set, however you set the filters.  This *may* be fixed in the latest devel version but we're waiting to see.  At the moment these results may under-represent the true hits.
+
 
 ```{r}
 compare_enrichment_results(all_enrichment_results) -> enrichment_differences
@@ -168,20 +174,19 @@ filtered_enrichment_differences |>
 
 ```
 
-Now we're down to just 19 terms which is a lot more manageable.
+Now we're down to just 48 terms which is a lot more manageable.
 
 # Plot comparison results
 
 We can take the comparison results and generate a heatmap which shows the enrichment levels in the different gene sets
 
-```{r}
+```{r fig.height=8, fig.width=7}
 plot_differential_enrichment_heatmap(
   filtered_enrichment_differences |> filter(p.adjust<0.05),
-  all_enrichment_results,
-  cluster_names
+  scale=TRUE,
+  log_scale = FALSE
 )
 ```
-
 
 
 
