@@ -150,10 +150,37 @@ enrichment_differences |>
 
 ```
 
+We can see that these are redundant because we're using all terms to test with.
+
+Let's pick out only the terms which were in our clustered hits and test just those.
+
+```{r}
+lapply(all_clustered_hits, function(x)x$ID) -> interesting_ids
+
+do.call(c,interesting_ids) |> unique() -> interesting_ids
+
+lapply(all_enrichment_results, function(x)x |> filter(ID %in% interesting_ids)) -> filtered_enrichment_results
+
+compare_enrichment_results(filtered_enrichment_results) -> filtered_enrichment_differences
+
+filtered_enrichment_differences |>
+  filter(p.adjust<0.05)
+
+```
+
+Now we're down to just 19 terms which is a lot more manageable.
 
 # Plot comparison results
 
 We can take the comparison results and generate a heatmap which shows the enrichment levels in the different gene sets
+
+```{r}
+plot_differential_enrichment_heatmap(
+  filtered_enrichment_differences |> filter(p.adjust<0.05),
+  all_enrichment_results,
+  cluster_names
+)
+```
 
 
 
