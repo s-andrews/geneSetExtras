@@ -14,7 +14,12 @@
 cluster_enrich_result <- function(enrich_result, cluster_threshold=0.9, min_fold_enrichment=1, max_p_adjust=0.05, clust_method="average", min_cluster_size=2) {
   enrich_result |>
     dplyr::filter(FoldEnrichment>=min_fold_enrichment) |>
-    dplyr::filter(p.adjust<=max_p_adjust) |>
+    dplyr::filter(p.adjust<=max_p_adjust) -> data_for_similarity
+  
+  if (nrow(data_for_similarity) < 2) {
+    return(NULL)
+  }
+  data_for_similarity |>
     enrichplot::pairwise_termsim() -> termsim_results
   
   
