@@ -31,9 +31,11 @@ library(tidyverse)
 The format of the data here isn't important, we just need some way to define the background and hit lists for each group.
 
 ```{r message=FALSE, warning=FALSE}
-read_delim(system.file("data1.tsv", package="geneSetExtras")) -> data1
-read_delim(system.file("data2.tsv", package="geneSetExtras")) -> data2
-read_delim(system.file("data3.tsv", package="geneSetExtras")) -> data3
+read_delim(system.file("hit_clusters.txt", package="geneSetExtras")) -> hit_data
+
+hit_data |>
+  group_by(cluster) |>
+  count()
 ```
 
 # Running Cluster Profiler
@@ -44,42 +46,20 @@ It's a good idea to limit the size of the gene sets used for the tests.  Cluster
 
 In this instance we'll just use the GO:BP subsection.  We're just going to use all significant genes in this test, but you can be more selective.  Depending on the nature of your data it may make sense to split out upregulated and downregulated genes.
 
-```{r}
-enrichGO(
-  gene = data1 |> filter(significant) |> pull(Gene),
-  universe = data1 |> pull(Gene),
-  OrgDb = org.Hs.eg.db,
-  keyType = "SYMBOL",
-  pvalueCutoff = 1,
-  readable = TRUE,
-  ont = "BP"
-) -> enrich1
-```
-
+We'll calculate results just for cluster 4 to illustrate how this works.
 
 ```{r}
 enrichGO(
-  gene = data2 |> filter(significant) |> pull(Gene),
-  universe = data2 |> pull(Gene),
+  gene = hit_data |> filter(cluster==4) |> pull(Gene),
+  universe = hit_data |> pull(Gene),
   OrgDb = org.Hs.eg.db,
   keyType = "SYMBOL",
-  pvalueCutoff = 1,
+  pvalueCutoff = Inf,
+  qvalueCutoff = Inf,
   readable = TRUE,
   ont = "BP"
-) -> enrich2
-```
+) -> enrich_cluster_4
 
-
-```{r}
-enrichGO(
-  gene = data3 |> filter(significant) |> pull(Gene),
-  universe = data3 |> pull(Gene),
-  OrgDb = org.Hs.eg.db,
-  keyType = "SYMBOL",
-  pvalueCutoff = 1,
-  readable = TRUE,
-  ont = "BP"
-) -> enrich3
 ```
 
 # Plotting
@@ -88,19 +68,10 @@ Now we have individual hits we can plot them out using a volcano plot.  It's oft
 
 
 ```{r}
-volcano_plot(enrich1, interactive=TRUE)
+volcano_plot(enrich_cluster_4, interactive=TRUE)
 ```
 
 
-```{r}
-volcano_plot(enrich2, interactive=TRUE)
-```
-
-
-
-```{r}
-volcano_plot(enrich3, interactive=TRUE)
-```
 
 
 # Clustering
@@ -108,27 +79,86 @@ volcano_plot(enrich3, interactive=TRUE)
 Next we want to do some categorical clustering to find hits which are similar in their gene content and then pick a suitable term to represent each of them.
 
 ```{r fig.width=800, fig.height=800}
-cluster_enrich_result(enrich1) -> cluster1
-cluster1
-cluster_volcano_plot(cluster1, interactive = TRUE)
+cluster_enrich_result(enrich_cluster_4) -> clusterered_results_cluster4
+clusterered_results_cluster4
+cluster_volcano_plot(clusterered_results_cluster4, interactive = TRUE)
 ```
 
-```{r fig.width=800, fig.height=800}
-cluster_enrich_result(enrich2) -> cluster2
-cluster2
-cluster_volcano_plot(cluster2, interactive = TRUE)
+# Automation
+
+We have several clusters, so it would be nice to show the results for all of them.  This isn't specific to the package, but shows how this could be done.
+
+```{r}
+calculate_cluster_enrichment <- function(data,cluster_name) {
+  enrichGO(
+    gene = data |> filter(cluster==cluster_name) |> pull(Gene),
+    universe = data |> pull(Gene),
+    OrgDb = org.Hs.eg.db,
+    keyType = "SYMBOL",
+    pvalueCutoff = 1,
+    qvalueCutoff = 1,
+    readable = TRUE,
+    ont = "BP"
+  )
+}
+
+hit_data |> arrange(cluster)|> filter(!is.na(cluster)) |> distinct(cluster) |> pull(cluster) -> cluster_names
+
+lapply(
+  cluster_names,
+  function(x)calculate_cluster_enrichment(hit_data,x)
+) -> all_enrichment_results
+
 ```
 
-```{r fig.width=800, fig.height=800}
-cluster_enrich_result(enrich3) -> cluster3
-cluster3
-cluster_volcano_plot(cluster3, interactive = TRUE)
+We can then plot out the results for each cluster
+
+```{r}
+lapply(all_enrichment_results, volcano_plot, interactive=TRUE)
 ```
 
+We can also generate clustered results
+
+```{r}
+lapply(
+  all_enrichment_results,
+  cluster_enrich_result
+) -> all_clustered_hits
+
+for (i in 1:length(cluster_names)) {
+  if (! is.null(all_clustered_hits[[i]])) {
+    all_clustered_hits[[i]] |>
+      add_column(cluster=cluster_names[i], .before=1) -> all_clustered_hits[[i]]
+  }
+}
+
+all_clustered_hits
+
+```
 
 # Comparison
 
 Next we want to look for terms whose enrichment changes significantly between different datasets.  We can do this by passing a list of the enrichment results we want to compare.  Only terms which are in all sets can be tested, which is why it's important that the original enrichment is calculated without a pvalue filter.
+
+\*NB There is an issue with clusterProfiler where it doesn't report categories with no overlaps in the gene set, however you set the filters.  This *may* be fixed in the latest devel version but we're waiting to see.  At the moment these results may under-represent the true hits.
+
+```{r}
+compare_enrichment_results(all_enrichment_results) -> enrichment_differences
+
+enrichment_differences |>
+  filter(p.adjust<0.05)
+
+```
+
+
+# Plot comparison results
+
+We can take the comparison results and generate a heatmap which shows the enrichment levels in the different gene sets
+
+
+
+
+
 
 
 
