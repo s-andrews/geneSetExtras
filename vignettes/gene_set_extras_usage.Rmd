@@ -78,7 +78,7 @@ volcano_plot(enrich_cluster_4, interactive=TRUE)
 
 Next we want to do some categorical clustering to find hits which are similar in their gene content and then pick a suitable term to represent each of them.
 
-```{r fig.width=800, fig.height=800}
+```{r}
 cluster_enrich_result(enrich_cluster_4) -> clusterered_results_cluster4
 clusterered_results_cluster4
 cluster_volcano_plot(clusterered_results_cluster4, interactive = TRUE)

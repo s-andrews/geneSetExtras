@@ -7,7 +7,7 @@
 #' @param clust_method How cluster agglomeration method to use - see hclust for details
 #' @param min_cluster_size The smallest cluster term size to report
 #'
-#' @return
+#' @return A tibble with only a single gene set for each clustered group
 #' @export
 #'
 #' @examples
