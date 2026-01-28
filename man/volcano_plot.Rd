@@ -10,6 +10,8 @@ volcano_plot(enrich_result, interactive = FALSE, title = NA)
 \item{enrich_result}{A clusterProfiler categorical enrichment results from enrichGO or similar}
 
 \item{interactive}{Whether to return a traditional ggplot (FALSE) or interactive plotly (TRUE) plot}
+
+\item{title}{Text for a title to be placed over the plot}
 }
 \value{
 A ggplot or plotly plot

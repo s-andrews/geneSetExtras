@@ -2,6 +2,7 @@
 #'
 #' @param enrich_result A clusterProfiler categorical enrichment results from enrichGO or similar
 #' @param interactive Whether to return a traditional ggplot (FALSE) or interactive plotly (TRUE) plot
+#' @param title Text for a title to be placed over the plot
 #'
 #' @return A ggplot or plotly plot
 #' @export
@@ -14,16 +15,16 @@ volcano_plot <- function(enrich_result, interactive=FALSE, title=NA) {
     dplyr::mutate(setSize=as.integer(stringr::str_replace(BgRatio,"/.*$",""))) |>
     dplyr::mutate(significant = dplyr::if_else(p.adjust<0.05,"Significant","Non-Significant")) |>
     dplyr::mutate(FDR_Phred = -10*log10(p.adjust)) |>
-    arrange(desc(p.adjust)) -> plot_data
+    dplyr::arrange(dplyr::desc(p.adjust)) -> plot_data
   
   
   plot_data |>
-    ggplot2::ggplot(aes(x=FoldEnrichment, y=FDR_Phred, size=setSize, ID=ID, Description=Description, colour=significant)) +
+    ggplot2::ggplot(ggplot2::aes(x=FoldEnrichment, y=FDR_Phred, size=setSize, ID=ID, Description=Description, colour=significant)) +
     ggplot2::geom_point(pch=21) +
-    scale_colour_manual(values=c("grey","red2")) -> volcano_plot
+    ggplot2::scale_colour_manual(values=c("grey","red2")) -> volcano_plot
   
   if (!is.na(title)) {
-    volcano_plot + ggtitle(title) -> volcano_plot
+    volcano_plot + ggplot2::ggtitle(title) -> volcano_plot
   }
   
   

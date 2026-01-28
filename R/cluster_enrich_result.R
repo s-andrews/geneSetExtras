@@ -32,7 +32,7 @@ cluster_enrich_result <- function(enrich_result, cluster_threshold=0.9, min_fold
     term_cluster=clusters
   ) |>
     dplyr::group_by(term_cluster) |>
-    dplyr::mutate(term_cluster_size=n()) |>
+    dplyr::mutate(term_cluster_size=dplyr::n()) |>
     dplyr::filter(term_cluster_size >= min_cluster_size) -> clusters
   
   
@@ -45,7 +45,7 @@ cluster_enrich_result <- function(enrich_result, cluster_threshold=0.9, min_fold
     dplyr::group_by(term_cluster) |>
     dplyr::slice(1) |>
     dplyr::ungroup() |>
-    dplyr::select(ID,Description,term_cluster,term_cluster_size,everything()) -> final_data
+    dplyr::select(ID,Description,term_cluster,term_cluster_size,dplyr::everything()) -> final_data
   
   return(final_data)
     

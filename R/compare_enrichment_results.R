@@ -32,7 +32,7 @@ compare_enrichment_results <- function(enrichment_results) {
   do.call(dplyr::bind_rows, data_for_testing) -> data_for_testing
   
   data_for_testing |>
-    distinct(ID,Description) -> annotation_data
+    dplyr::distinct(ID,Description) -> annotation_data
 
   # We have a problem here which is that if enrichGO doesn't have any hits to a category
   # in its hit list (not the background) then it doesn't report the result, not matter
@@ -46,23 +46,23 @@ compare_enrichment_results <- function(enrichment_results) {
   # For now we're going to kludge this 
   
   data_for_testing |>
-    select(-Description) |>
-    complete(ID,group_name) |>
-    arrange(ID,group_name) |>
-    mutate(GeneSuccess = replace_na(GeneSuccess,0)) |>
-    group_by(group_name) |>
-    mutate(GeneTotal = replace_na(GeneTotal, GeneTotal[!is.na(GeneTotal)][1])) |>
-    mutate(BgTotal = replace_na(BgTotal, BgTotal[!is.na(BgTotal)][1]))  |>
-    ungroup() |>
-    group_by(ID) |>
-    mutate(BgSuccess = replace_na(BgSuccess, min(BgSuccess[!is.na(BgSuccess)]))) |>
-    ungroup() -> data_for_testing
+    dplyr::select(-Description) |>
+    tidyr::complete(ID,group_name) |>
+    dplyr::arrange(ID,group_name) |>
+    dplyr::mutate(GeneSuccess = tidyr::replace_na(GeneSuccess,0)) |>
+    dplyr::group_by(group_name) |>
+    dplyr::mutate(GeneTotal = tidyr::replace_na(GeneTotal, GeneTotal[!is.na(GeneTotal)][1])) |>
+    dplyr::mutate(BgTotal = tidyr::replace_na(BgTotal, BgTotal[!is.na(BgTotal)][1]))  |>
+    dplyr::ungroup() |>
+    dplyr::group_by(ID) |>
+    dplyr::mutate(BgSuccess = tidyr::replace_na(BgSuccess, min(BgSuccess[!is.na(BgSuccess)]))) |>
+    dplyr::ungroup() -> data_for_testing
   
     
   data_for_testing |>
     dplyr::group_by(ID) |>
     dplyr::filter(
-      n() == length(enrichment_results)
+      dplyr::n() == length(enrichment_results)
     ) |>
     dplyr::ungroup() -> data_for_testing
   
@@ -95,7 +95,7 @@ compare_enrichment_results <- function(enrichment_results) {
     dplyr::left_join(annotation_data) |>
     dplyr::arrange(pvalue) |>
     dplyr::mutate(p.adjust=p.adjust(pvalue,method="fdr")) |>
-    dplyr::select(ID,Description,p.adjust,everything()) -> results_data
+    dplyr::select(ID,Description,p.adjust,tidyselect::everything()) -> results_data
   
   return(results_data)
   
@@ -107,13 +107,13 @@ perform_test <- function(data,id) {
   stats::glm (
     cbind(Success,Fail) ~ group_name * group,
     data = data,
-    family=binomial()
+    family=stats::binomial()
   ) -> fit
   
   stats::glm (
     cbind(Success,Fail) ~ group_name + group,
     data = data,
-    family=binomial()
+    family=stats::binomial()
   ) -> fit_no_interaction
   
   stats::anova(fit_no_interaction,fit, test="Chisq") -> test_result

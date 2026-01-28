@@ -11,17 +11,17 @@
 plot_differential_enrichment_heatmap <- function(differential_enrichment_hits,scale=TRUE, log_scale=TRUE) {
   
   differential_enrichment_hits |>
-    pivot_longer(
-      cols=starts_with("FoldEnrichment_"),
+    tidyr::pivot_longer(
+      cols=tidyselect::starts_with("FoldEnrichment_"),
       names_to="group",
       values_to="Enrichment"
     ) |>
-    mutate(group=str_replace(group,"^FoldEnrichment_","")) -> plot_data
+    dplyr::mutate(group=stringr::str_replace(group,"^FoldEnrichment_","")) -> plot_data
 
   if (log_scale) {
     plot_data |>
-      mutate(Enrichment = replace(Enrichment, Enrichment==0, 0.1)) |>
-      mutate(Enrichment=log2(Enrichment)) -> plot_data
+      dplyr::mutate(Enrichment = replace(Enrichment, Enrichment==0, 0.1)) |>
+      dplyr::mutate(Enrichment=log2(Enrichment)) -> plot_data
   }  
 
   scale_value <- "none"

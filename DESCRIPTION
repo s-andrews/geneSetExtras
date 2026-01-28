@@ -20,4 +20,6 @@ Imports:
     plotly,
     stringr,
     tibble,
-    tidyr
+    tidyheatmaps,
+    tidyr,
+    tidyselect
