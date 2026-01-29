@@ -29,4 +29,4 @@ The package currently supports gene set enrichment analysis from named lists of 
 
 ## Usage
 
-The package is still evolving, so the easiest way to see the current capabilities and usage is to look at the [geneSetExtras Vignette](https://html-preview.github.io/?https://raw.githubusercontent.com/s-andrews/geneSetExtras/refs/heads/main/doc/gene_set_extras_usage.html) for details of how to use the package.
+The package is still evolving, so the easiest way to see the current capabilities and usage is to look at the [geneSetExtras Vignette](https://html-preview.github.io/?url=https://raw.githubusercontent.com/s-andrews/geneSetExtras/refs/heads/main/doc/gene_set_extras_usage.html) for details of how to use the package.
