@@ -18,7 +18,7 @@ We're going to load in some basic packages.  We use ```clusterProfiler``` to do 
 
 We're using tidyverse for general data loading and manipulation - this isn't required but it's nice.
 
-```{r setup}
+```{r setup, warning=FALSE}
 library(geneSetExtras)
 library(org.Hs.eg.db)
 library(clusterProfiler)
@@ -148,7 +148,7 @@ Next we want to look for terms whose enrichment changes significantly between di
 \*NB There is an issue with clusterProfiler where it doesn't report categories with no overlaps in the gene set, however you set the filters.  This *may* be fixed in the latest devel version but we're waiting to see.  At the moment these results may under-represent the true hits.
 
 
-```{r}
+```{r warning=FALSE}
 compare_enrichment_results(all_enrichment_results) -> enrichment_differences
 
 enrichment_differences |>
