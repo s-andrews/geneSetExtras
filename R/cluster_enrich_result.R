@@ -41,10 +41,7 @@ cluster_enrich_result <- function(enrich_result, cluster_threshold=0.9, min_fold
     dplyr::inner_join(clusters) -> clusters
   
   clusters |>
-    dplyr::arrange(term_cluster_size,pvalue) |>
-    dplyr::group_by(term_cluster) |>
-    dplyr::slice(1) |>
-    dplyr::ungroup() |>
+    dplyr::arrange(term_cluster,term_cluster_size,pvalue) |>
     dplyr::select(ID,Description,term_cluster,term_cluster_size,dplyr::everything()) -> final_data
   
   return(final_data)
